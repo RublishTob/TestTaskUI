@@ -1,23 +1,38 @@
+using System.Collections;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class NavigateButton : MonoBehaviour
+public class NavigateButton : ButtonView
 {
     [SerializeField] private UIRouter _uiRouter;
     [SerializeField] private PanelEnum _panelNavigateTo;
-    [SerializeField] private Button _button;
 
-    private void OnEnable()
+    private Sequence _sequense;
+    private Transform _startTransform;
+
+    private void Start()
     {
-        _button.onClick.AddListener(OnClick);
-    }
-    private void OnDisable()
-    {
-        _button.onClick.RemoveListener(OnClick);
+        _startTransform = transform;  
     }
 
-    private void OnClick()
+    public override void Click()
     {
+        StartCoroutine(AnimateAndNavigate());
+    }
+
+    private IEnumerator AnimateAndNavigate()
+    {
+        if (_sequense == null)
+            _sequense = DOTween.Sequence();
+
+        _sequense.Append(transform.DOMoveY(transform.position.y + 0.1f, 0.5f).SetEase(Ease.OutElastic)).SetLoops(1,LoopType.Yoyo);
+        _sequense.Append(transform.DOMove(_startTransform.position, 0.5f));
+
+       yield return new WaitForSeconds(0.4f);
+
         _uiRouter.ChangePanel(_panelNavigateTo);
+
+        _sequense = null;
     }
 }
